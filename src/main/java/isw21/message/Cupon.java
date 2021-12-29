@@ -1,3 +1,5 @@
+
+//Clase Cupon (pruebas)
 package main.java.isw21.message;
 
 public class Cupon {

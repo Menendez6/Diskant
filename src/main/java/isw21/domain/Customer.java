@@ -1,3 +1,4 @@
+// Descripcion de la calse sutomer
 package main.java.isw21.domain;
 
 import java.io.Serializable;
@@ -6,6 +7,9 @@ public class Customer implements Serializable{
     /**
      *
      */
+    // Por ahora solo se almacenará la contrseña y el nombre de usuario. En el rpoximo Sprint se añadiran más
+    // como por ejemplo mail, numero de telefono y grupos a los que pertenece.
+
     private static final long serialVersionUID = 1L;
     private String id;
     private String name;
@@ -36,6 +40,9 @@ public class Customer implements Serializable{
         this.name = name;
     }
 
+    //Metodo equals --> Establecemos que para que un usuario sea igual a otro debe tener el nombre y la contraseña igual
+    //En un futuro cambiará y se podrá acceder tambien por mail y por correo electrónico.
+    // El método es util  en las funciones de añadir usuario y login.
     @Override
     public boolean equals(Object o){
         if (o instanceof Customer){

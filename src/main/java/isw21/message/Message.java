@@ -1,3 +1,4 @@
+// Descripción de la clase Message. Es la encargada del transporte de la información entre servidor y cliente
 package main.java.isw21.message;
 
 import main.java.isw21.domain.Customer;
@@ -10,6 +11,8 @@ public class Message implements Serializable {
     /**
      *
      */
+    // Establecemos como parámetros el contexto del mensaje y un hashmap en el que poder intercambiar todos los datos
+    // necesarios para el correcto funcionamiento de los métodos en cliente (client) y servidor (SocketServer)
     private static final long serialVersionUID = 1L;
     private String context;
     private Map<String, Object> session;

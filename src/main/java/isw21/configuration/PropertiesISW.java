@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
-
+//Codigo de conexion a la base de datos utilizado por el servidor
 public class PropertiesISW extends Properties{
 
     /**
@@ -13,12 +13,14 @@ public class PropertiesISW extends Properties{
      */
     private static final long serialVersionUID = 1L;
     private static PropertiesISW prop;
-    private static final String path="properties.xml";
+    private static final String path="properties/properties.xml";
 
 
     private PropertiesISW() {
         try {
             this.loadFromXML(new FileInputStream(path));
+            //this.loadFromXML(getClass().getClassLoader().getResourceAsStream("properties.xml"));
+
         } catch (InvalidPropertiesFormatException e) {
             // TOD O Auto-generated catch block
             e.printStackTrace();

@@ -3,59 +3,106 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+
 import main.java.isw21.paginas.*;
 
 public class JPrincipal extends JFrame
 {
-    public static void main(String args[])
-    {
-        new JPrincipal();
-    }
-    public JPrincipal()
-    {
-        setSize(900,600);
+	public static void main(String args[])
+	{
+		new JPrincipal();
+	}
+	public JPrincipal()
+	{
+		setSize(500,400);
+		this.setLayout(new BorderLayout());
+		Font fuente = new Font("Serif", 1, 30);
 
-        JLabel lblBienvenida= new JLabel("Bienvenido a DiskAnt");
-        Font fuente = new Font("Serif", 0, 35);
+        Font fuente2 = new Font("Serif", 0, 18);
+        this.setBackground(new Color(17,90,29));
+
+	//NORTE	
+		JPanel pnlNorte = new JPanel();
+		
+
+		JLabel lblBienvenida = new JLabel("Bienvenido a DiskAnt");
+
         lblBienvenida.setFont(fuente);
-        JPanel pnlNorte= new JPanel();
-        pnlNorte.add(lblBienvenida);
+		pnlNorte.add(lblBienvenida);
 
-        JPanel pnlCentro = new JPanel();
-        JButton btnLogin = new JButton("Log in");
-        //btn_login.setPreferredSize(new Dimension(200, 50));
-        pnlCentro.add(btnLogin);
+	
 
-        btnLogin.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                JLogin login = new JLogin();
-            };
-        });
+    //CENTRO
+		JPanel pnlCentro = new JPanel();
 
-        JButton btnRegister = new JButton("Register");
-        pnlCentro.add(btnRegister);
+		pnlCentro.setBackground(new Color(112,157,119));
+		pnlCentro.setLayout(new GridLayout(4,3));
+		JLabel l1 = new JLabel();
+		JLabel l2 = new JLabel();
+		JLabel l3 = new JLabel();
+		JLabel l4 = new JLabel();
+		JLabel l5 = new JLabel();
+		JLabel l6 = new JLabel();
+		JLabel l7 = new JLabel();
+		
 
-        btnRegister.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                JRegister register = new JRegister();
-            }
-        });
-        this.setLayout(new GridLayout(2,1));
-        this.add(pnlNorte);
-
-        this.add(pnlCentro);
-        this.pack();
-        this.setSize(500,400);
+		JButton btnLogin = new JButton("Log in");
+		btnLogin.setFont(fuente2);
 
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
-        this.setLocation(250, 100);
-    }
+		JButton btnRegister = new JButton("Register");
+		btnRegister.setFont(fuente2);
+
+		pnlCentro.add(l1);
+		pnlCentro.add(l2);
+		pnlCentro.add(l3);
+		pnlCentro.add(l4);
+		pnlCentro.add(btnLogin);
+		pnlCentro.add(l5);
+		pnlCentro.add(l6);
+		pnlCentro.add(btnRegister);
+		pnlCentro.add(l7);
+
+	//SUR
+		JPanel pnlSur = new JPanel();
+        JLabel lblLogo= new JLabel();
+		ImageIcon imagen = new ImageIcon("src/main/java/isw21/media/LogoDiskAnt.jpeg");
+		lblLogo.setIcon(new ImageIcon(imagen.getImage().getScaledInstance(150, 60, Image.SCALE_SMOOTH)));
+
+        pnlSur.setBackground(new Color(112,157,119));
+        pnlSur.add(lblLogo);
+	
+	//FUNCIONES
+		btnLogin.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				JLogin login = new JLogin();
+				setVisible(false);
+			};
+		});
+		btnRegister.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				JRegister register = new JRegister();
+				setVisible(false);
+			}
+		});
+		
+
+	
+		this.add(pnlNorte, BorderLayout.NORTH);
+		this.add(pnlCentro, BorderLayout.CENTER);
+		this.add(pnlSur, BorderLayout.SOUTH);
 
 
+		//this.pack();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+		this.setVisible(true); 
+		this.setLocation(500, 100);
+	}
+
+	
 }
+

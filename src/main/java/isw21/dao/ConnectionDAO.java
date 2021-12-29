@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import main.java.isw21.configuration.PropertiesISW;
-
+//Clase encargado de la conexion del servidor con la base datos para las llamadas.
 public class ConnectionDAO {
     private static ConnectionDAO connectionDAO;
     private Connection con;
