@@ -7,6 +7,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Clase para crear mensajes que se transmiten entre cliente y servidor
+ * @version 0.1
+ */
 public class Message implements Serializable {
     /**
      *

@@ -9,21 +9,20 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import main.java.isw21.controler.CustomerControler;
-import main.java.isw21.dao.ConnectionDAO;
-import main.java.isw21.dao.CustomerDAO;
-import main.java.isw21.dao.DescuentoDAO;
-import main.java.isw21.descuentos.Descuento;
+import main.java.isw21.controler.OfertaControler;
+import main.java.isw21.descuentos.ChequeRegalo;
+import main.java.isw21.descuentos.Oferta;
 import main.java.isw21.domain.Customer;
 import main.java.isw21.message.Message;
 
+/**
+ * Clase servidor que dialoga con el cliente para manipular la información necesaria para el funcionamiento de la aplicación a través de los DAOs.
+ * @version 0.3
+ */
 public class SocketServer extends Thread {
     public static final int PORT_NUMBER = 8081;
 
@@ -36,10 +35,14 @@ public class SocketServer extends Thread {
         start();
     }
 
-    //Codigo de ejecucion continua en el servidor
+    /**
+     * Código de ejecución continua en el servidor
+     */
     public void run() {
         InputStream in = null;
         OutputStream out = null;
+        Customer customer;
+        double ahorrado;
         try {
 
             in = socket.getInputStream();
@@ -52,7 +55,8 @@ public class SocketServer extends Thread {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(out);
             Message mensajeOut=new Message();
             System.out.println("Server working");
-
+            CustomerControler controler=new CustomerControler();
+            OfertaControler ofertaControler = new OfertaControler();
             // Dividimos todos los casos de entrada de mensaje:
             switch (mensajeIn.getContext()) {
                 //Por defecto, pondremos todas las evoluciones al cliente con el mismo contexto de entrada seguido de Response
@@ -60,9 +64,9 @@ public class SocketServer extends Thread {
                 //Caso de obtencion de los usuarios alojados en la base de datos
                 case "/getCustomer":
                     //Instanciamos el objeto que controla las listas de usuarios y la lista donde queremos alojarlo
-                    CustomerControler customerControler=new CustomerControler();
+
                     ArrayList<Customer> lista=new ArrayList<>();
-                    customerControler.getCustomer(lista);
+                    controler.getCustomer(lista);
                     //Iniciamos la construccion del mensaje de vuelta, contexto y la lista rellena de los usuarios
                     mensajeOut.setContext("/getCustomerResponse");
                     HashMap<String,Object> session=new HashMap<>();
@@ -75,21 +79,24 @@ public class SocketServer extends Thread {
                 case "/getAccess":
                     //Cuando el usuario quiera identificarse, el servidor recogerá el customer introducido por el usuario
                     // Y el servidor confirmará que el customer introducido es el mismo que el que figura en la base de datos
-                    Customer customerIN= mensajeIn.getCustomer();
+                    //Customer customerIN= mensajeIn.getCustomer();
+                    //CustomerControler controler=new CustomerControler();
                     mensajeOut.setContext("/getAccessResponse");
 
                     session=new HashMap<>();
-                    session.put("Customer",false);
-                    if (CustomerDAO.isInBase(customerIN)!=null){
+                    Customer customerIN =(Customer) mensajeIn.getSession().get("Customer");
+
+                    //session.put("Customer",null);
+                    if (controler.isInBase(customerIN)!=null){
                         // Si figura en la base, se modificará la salida y se pondrá a true. Cabe destacar que esta salida será la que determine si la
                         // autentificacion ha sido correcta
-                        session.put("Customer",true);
-                        System.out.println("Se ha autenticado el usuario: "+customerIN.getId());
+                        session.put("Customer",controler.isInBase(customerIN));
+                        System.out.println("Se ha autenticado el usuario: "+customerIN.getUsuario());
                     }
                     else{
                         // En caso contrario será false
-                        session.put("Customer",false);
-                        System.out.println("Se ha introducido mal la contraseña para el ID"+customerIN.getId());
+                        session.put("Customer",null);
+                        System.out.println("Se ha introducido mal la contraseña para el ID"+customerIN.getUsuario());
                     }
                     mensajeOut.setSession(session);
                     objectOutputStream.writeObject(mensajeOut);
@@ -101,37 +108,85 @@ public class SocketServer extends Thread {
                     mensajeOut.setContext("/addNewUserResponse");
                     session=new HashMap<>();
                     //Marcamos como false el mensaje de vuelta
-                    session.put("Customer",false);
-                    if (CustomerDAO.isInBase(customerIN)!=null){
+                    session.put("Customer",null);
+                    if (controler.isInBase(customerIN)!=null){
                         // Si el customer ya se encuntra en la base de datos, no modifcamos el valor
-                        session.put("Customer",false);
+                        session.put("Customer",null);
                     }
                     else{
+                        System.out.println("El email del servidor a guardar es:"+customerIN.getEmail());
                         //En caso contrario, ejecutamos el método de añadido del usuario
-                        CustomerDAO.addCliente(customerIN);
+                        controler.addCliente(customerIN);
                         //Tras haber ejecutado el añadido, comprobamos si realmente se ha añadido, en ese caso
                         // se modifica a true en el mensaje de vuelta.
-                        if (CustomerDAO.isInBase(customerIN)!=null){
-                            session.put("Customer",true);
+                        if (controler.isInBase(customerIN)!=null){
+                            session.put("Customer",controler.isInBase(customerIN));
                         }
                     }
                     mensajeOut.setSession(session);
                     // Mandamos el mensaje al cliente de vuelta
                     objectOutputStream.writeObject(mensajeOut);
                     break;
+                case "/updateDescuento":
+                    mensajeOut.setContext("/updateDescuentoResponse");
+                    customer =(Customer) mensajeIn.getSession().get("Customer");
+                    ahorrado= (Double) mensajeIn.getSession().get("Ahorrado");
+                    //int numperc = (Integer) mensajeIn.getSession().get("Numero");
+                    controler.updateDescuento(customer,ahorrado);
+                    session=new HashMap<String, Object>();
+                    //Mandaremos como salida el descuento añadido
+                    session.put("Ahorrado", ahorrado);
+                    mensajeOut.setSession(session);
+                    //Lo mandamos de vuelta
+                    objectOutputStream.writeObject(mensajeOut);
+                    System.out.println("Se ha actualizado la cantidad ahorrada en descuento");
+                    //Se debe inlcuir codigo para evitar introucir descuentos repetidos
+                    break;
+                case "/updatePorcentaje":
+                    mensajeOut.setContext("/updatePorcentajeResponse");
+                    customer =(Customer) mensajeIn.getSession().get("Customer");
+                    ahorrado= (Double) mensajeIn.getSession().get("Ahorrado");
+                    int numperc = (Integer) mensajeIn.getSession().get("Numero");
+                    controler.updatePorcentaje(customer,ahorrado,numperc);
+                    session=new HashMap<String, Object>();
+                    //Mandaremos como salida el descuento añadido
+                    session.put("Ahorrado", ahorrado);
+                    mensajeOut.setSession(session);
+                    //Lo mandamos de vuelta
+                    objectOutputStream.writeObject(mensajeOut);
+                    System.out.println("Se ha actualizado la cantidad ahorrada en porcentajes");
+                    //Se debe inlcuir codigo para evitar introucir descuentos repetidos
+                    break;
+                case "/updateCheque":
+                    mensajeOut.setContext("/updateChequeResponse");
+                    customer =(Customer) mensajeIn.getSession().get("Customer");
+                    ChequeRegalo cheque = (ChequeRegalo) mensajeIn.getSession().get("Cheque");
+                    ahorrado = (Double) mensajeIn.getSession().get("Ahorrado");
+                    controler.updateCheque(customer,ahorrado);
+                    ofertaControler.updateGastado(customer,cheque);
+                    session=new HashMap<String, Object>();
+                    //Mandaremos como salida el descuento añadido
+                    session.put("Cheque", cheque);
+                    mensajeOut.setSession(session);
+                    //Lo mandamos de vuelta
+                    objectOutputStream.writeObject(mensajeOut);
+                    System.out.println("Se ha actualizado la cantidad ahorrada en cheques");
+                    //Se debe inlcuir codigo para evitar introucir descuentos repetidos
+                    break;
                 // Caso de añadir descuento
                 case "/addDescuento":
                     //Iniciamos el mensaje de vuelta
                     mensajeOut.setContext("/addDescuentoResponse");
                     // Extraemos los valores necesarios para el añadido de descuentos: el dueño (custgomer) y el descuento a añadir en la base de datos
-                    Customer customer =(Customer) mensajeIn.getSession().get("Customer");
-                    Descuento descuento= (Descuento) mensajeIn.getSession().get("Descuento");
+                    customer =(Customer) mensajeIn.getSession().get("Customer");
+                    Oferta oferta = (Oferta) mensajeIn.getSession().get("Descuento");
+                    int tipo = (Integer) mensajeIn.getSession().get("Tipo");
                     //Ejectuamos la funcion de añadir descuento a la base de datos
-                    DescuentoDAO.addDescuento(customer,descuento);
+                    ofertaControler.addDescuento(customer, oferta, tipo);
                     //Finalizamos el mensaje de salida y lo mandamos
                     session=new HashMap<String, Object>();
                     //Mandaremos como salida el descuento añadido
-                    session.put("Descuento",descuento);
+                    session.put("Descuento", oferta);
                     mensajeOut.setSession(session);
                     //Lo mandamos de vuelta
                     objectOutputStream.writeObject(mensajeOut);
@@ -145,12 +200,23 @@ public class SocketServer extends Thread {
                     //Extraemos del mensaje entrante, proveniente del cliente, el usuario del que queremos obtener los descuentos
                     customer =(Customer) mensajeIn.getSession().get("Customer");
                     //Extraemos tambien los descuentos
-                    ArrayList<Descuento> descuentos = (ArrayList<Descuento>) mensajeIn.getSession().get("Descuentos");
+                    ArrayList<Oferta> ofertas = (ArrayList<Oferta>) mensajeIn.getSession().get("Descuentos");
                     //Llamamos al metodo getDescuentos, el cual actualiza la lista de los descuentos del customer pasado como parámetro
-                    DescuentoDAO.getDescuentos(descuentos,customer);
+                    ofertaControler.getDescuentos(ofertas,customer);
                     //Construimos la respuesta
                     session=new HashMap<String, Object>();
-                    session.put("Descuentos",descuentos);
+                    session.put("Descuentos", ofertas);
+                    mensajeOut.setSession(session);
+                    //Una vez actualizada la lista y construida la respuesta, enviamos el mensaje de vuelta
+                    objectOutputStream.writeObject(mensajeOut);
+                    break;
+                case "/eliminarOferta":
+                    mensajeOut.setContext("/addDescuentoResponse");
+                    customer =(Customer) mensajeIn.getSession().get("Customer");
+                    oferta = (Oferta) mensajeIn.getSession().get("Oferta");
+                    ofertaControler.eliminarDescuento(customer,oferta);
+                    session=new HashMap<String, Object>();
+                    session.put("Descuento", oferta);
                     mensajeOut.setSession(session);
                     //Una vez actualizada la lista y construida la respuesta, enviamos el mensaje de vuelta
                     objectOutputStream.writeObject(mensajeOut);

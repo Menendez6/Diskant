@@ -5,20 +5,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.Color;
 import java.awt.Font;
-
+import java.util.HashMap;
 
 
 import main.java.isw21.client.Client;
 import main.java.isw21.configuration.PropertiesISW;
-import main.java.isw21.paginas.JRegister;
 import org.apache.log4j.Logger;
-import main.java.isw21.client.Client;
-import main.java.isw21.configuration.PropertiesISW;
-import main.java.isw21.message.Message;
 import main.java.isw21.domain.Customer;
-import org.apache.log4j.Logger;
-import main.java.isw21.paginas.JPrincipal;
 
+/**
+ * Ventana para logearse dentro de la aplicación comprobando que el usuario y la contraseña están en la base de datos.
+ * @version 0.2
+ */
 public class JLogin extends JFrame
 {
     public Boolean logCorrect;
@@ -148,31 +146,31 @@ public class JLogin extends JFrame
          //Para que funcione al darle enter en Login:
 	btnLogin.addKeyListener(new java.awt.event.KeyAdapter() 
 	{
-            public void keyPressed(java.awt.event.KeyEvent e) 
+            public void keyPressed(java.awt.event.KeyEvent e)
             {
-
-                // Para identificarse de manera correcta, se debe introducir correctamente el nombre y la contraseña de un usuario
-                //El servidor será el encargado de hacer la comprobación con la base de datos. Po lo tanto deberemos comunicarnos con el
-                // Para la comunicacion, utilizaremos el contexto de getAcces. En el mensaje tambien se especificará con que nombre y que contraseña
-                // se esta intentando acceder
+                //Misma funcionalidad que en el caso previo
                 cliente.setContext("/getAccess");
-                cliente.setNombre(txtPassword.getText());
-                cliente.setId(txtUser.getText());
-                //Mandamos la comunicacion al servidor
+                String nombre= new String(txtUser.getText());
+                String passw=new String(txtPassword.getPassword());
+                Customer cust= new Customer(nombre,passw);
+                HashMap<String,Object> session= new HashMap<>();
+                session.put("Customer",cust);
+                System.out.println("Se esta iniciando "+cust.getUsuario());
+                System.out.println("Contraseña: "+cust.getContraseña());
+                cliente.setSession(session);
                 cliente.run(cliente);
-                //Si la comuncacion es corrcta
-                if (cliente.getIdentification()){
+                if (cliente.getIdentification()!=null){
                     logCorrect=true;
-                    //Iniciamos sesion con el customer introducido por el usuario y pasamos a la pestaña de inicio
-                    customer= new Customer(txtUser.getText(),txtPassword.getText());
+                    customer= cliente.getIdentification();
                     System.out.println("Se ha logeado");
                     JInicio inicio= new JInicio(customer,cliente);
                     setVisible(false);
-
                 }
                 else{
+                    JOptionPane.showMessageDialog(null,"Se han introducido un usuario y/o una contraseña incorrecta. ");
                     setVisible(true);
                 }
+
             };
          });
          
@@ -183,17 +181,24 @@ public class JLogin extends JFrame
             {
                 //Misma funcionalidad que en el caso previo
                 cliente.setContext("/getAccess");
-                cliente.setNombre(txtPassword.getText());
-                cliente.setId(txtUser.getText());
+                String nombre= new String(txtUser.getText());
+                String passw=new String(txtPassword.getPassword());
+                Customer cust= new Customer(nombre,passw);
+                HashMap<String,Object> session= new HashMap<>();
+                session.put("Customer",cust);
+                System.out.println("Se esta iniciando "+cust.getUsuario());
+                System.out.println("Contraseña: "+cust.getContraseña());
+                cliente.setSession(session);
                 cliente.run(cliente);
-                if (cliente.getIdentification()){
+                if (cliente.getIdentification()!=null){
                     logCorrect=true;
-                    customer= new Customer(txtUser.getText(),txtPassword.getText());
+                    customer= cliente.getIdentification();
                     System.out.println("Se ha logeado");
                     JInicio inicio= new JInicio(customer,cliente);
                     setVisible(false);
                 }
                 else{
+                    JOptionPane.showMessageDialog(null,"Se han introducido un usuario y/o una contraseña incorrecta. ");
                     setVisible(true);
                 }
 
@@ -256,6 +261,7 @@ public class JLogin extends JFrame
 
         }
     });
+    this.setResizable(false);
     this.setVisible(true);
     this.setLocation(480, 200);
 

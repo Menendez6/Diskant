@@ -5,7 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
-//Codigo de conexion a la base de datos utilizado por el servidor
+
+/**
+ * Codigo para acceder a la configuración properties.xml, que contiene la información del servidor. Singleton.
+ * @version 0.1
+ */
 public class PropertiesISW extends Properties{
 
     /**
@@ -33,6 +37,11 @@ public class PropertiesISW extends Properties{
         };
     }
 
+    /**
+     * Método utilizado para aplicar el patrón Singleton, es decir que tengamos una sola instancia.
+     * @return un properties nuevo si es la primera vez que se crea en el código. Si ya está creado previamente, se devuelve el objeto Properties ya creado.
+     * De esta forma consigues que solo haya una instancia.
+     */
     public static PropertiesISW getInstance() {
         if (prop==null) {
             prop=new PropertiesISW();

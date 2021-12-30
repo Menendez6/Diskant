@@ -5,7 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import main.java.isw21.configuration.PropertiesISW;
-//Clase encargado de la conexion del servidor con la base datos para las llamadas.
+/**
+ * Clase encargado de establecer la conexion del servidor con la base datos para las llamadas. Patrón Singleton.
+ * @version 0.1
+ */
+
 public class ConnectionDAO {
     private static ConnectionDAO connectionDAO;
     private Connection con;
@@ -23,6 +27,11 @@ public class ConnectionDAO {
 
     }
 
+    /**
+     * Método utilizado para aplicar el patrón Singleton, es decir que tengamos una sola instancia.
+     * @return un connectionDAO nuevo si es la primera vez que se crea en el código. Si ya está creado previamente, se devuelve el objeto ya creado.
+     * De esta forma consigues que solo haya una instancia.
+     */
     public static ConnectionDAO getInstance() {
         if (connectionDAO == null) {
             connectionDAO=new ConnectionDAO();
